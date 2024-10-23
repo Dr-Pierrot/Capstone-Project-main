@@ -14,9 +14,7 @@ function filterStudents() {
             $('#student_id').empty().append('<option value="">All Students</option>');
             $.each(data, function(key, student) {
                 $('#student_id').append('<option value="' + student.id + '">' + 
-                    student.first_name + ' ' + student.middle_name + ' ' + student.last_name + 
-                    ' (' + (student.section ? student.section.name : '') + 
-                    ' - ' + (student.subject ? student.subject.name : '') + ')</option>');
+                    student.first_name + ' ' + student.middle_name + ' ' + student.last_name + '</option>');
             });
         }
     });
@@ -24,6 +22,7 @@ function filterStudents() {
 
 
 function openPerformanceModal(classCardId, studentId, term, type_activity) {
+    $('#selected_exam_type').val(term);
     $('#class_card_id').val(classCardId);
     $('#student_id_performance').val(studentId); // Populate the student_id
     $('#term').val(term); // Set the term input field value
@@ -87,7 +86,7 @@ function deletePerformance(type, term, item, csrf) {
             body: JSON.stringify({
                 type: type,
                 term: term,
-                item: item
+                item: item,
             })
         })
         .then(response => {

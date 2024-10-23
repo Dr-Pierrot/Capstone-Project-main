@@ -8,6 +8,7 @@ use App\Imports\StudentsImport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Section;
 use App\Models\Subject;
+use App\Models\Score;
 use Illuminate\Support\Facades\Log;
 use App\Models\ClassCard;
 
@@ -111,7 +112,6 @@ class StudentController extends Controller
             'gender' => 'required|string|max:255',
             'course' => 'required|string|max:255',
             'section_id' => 'required|exists:sections,id',
-            'subject_id' => 'required|exists:subjects,id',
             'student_type' => 'nullable|in:regular,irregular', // Add validation for student_type
         ]);
 
@@ -125,18 +125,10 @@ class StudentController extends Controller
             'gender' => $request->gender,
             'course' => $request->course,
             'section_id' => $request->section_id,
-            'subject_id' => $request->subject_id,
             'user_id' => Auth::id(),
             'student_type' => $request->student_type, // Add student_type to the create method
         ]);
 
-        // Create a ClassCard for the newly created student
-        ClassCard::create([
-            'student_id' => $student->id,
-            'subject_id' => $request->subject_id,
-            'section_id' => $request->section_id,
-            'user_id' => Auth::id(),
-        ]);
 
         return redirect()->route('students.index')->with('success', 'Student created successfully.');
     }
@@ -173,7 +165,6 @@ class StudentController extends Controller
             'gender' => 'required|string|max:255',
             'course' => 'required|string|max:255',
             'section_id' => 'required|exists:sections,id', // Validate section exists
-            'subject_id' => 'required|exists:subjects,id', // Validate subject exists
             'student_type' => 'nullable|in:regular,irregular', // Add validation for student_type
         ]);
 
@@ -192,7 +183,6 @@ class StudentController extends Controller
             'gender' => $request->gender,
             'course' => $request->course,
             'section_id' => $request->section_id, // Update section
-            'subject_id' => $request->subject_id, // Update subject
             'student_type' => $request->student_type, // Update student_type
         ]);
 
@@ -270,18 +260,22 @@ class StudentController extends Controller
     {
         // Get the authenticated teacher ID
         $teacherId = auth()->user()->id;
+        $subjectId = $request->input('subject_id');
 
         // Fetch sections and subjects for the dropdowns
         $sections = Section::where('user_id', $teacherId)->get();
-        $subjects = Subject::where('user_id', $teacherId)->get();
+
+        // Initialize variables to hold selected section and other necessary data
+        $sectionId = null;
+        $classCards = []; // To store relevant class card details for recitation
+        $term = null; // Placeholder for the term (adjust based on your requirements)
 
         // Check if the request is a POST (form submission)
         if ($request->isMethod('post')) {
-            $subjectId = $request->input('subject_id');
             $sectionId = $request->input('section_id');
 
             // Fetch students based on the selected subject and section
-            $students = Student::where('user_id', $teacherId)
+            $students = ClassCard::with('student')->where('user_id', $teacherId)
                 ->when($subjectId, function ($query) use ($subjectId) {
                     return $query->where('subject_id', $subjectId);
                 })
@@ -293,13 +287,71 @@ class StudentController extends Controller
             // Shuffle the students
             $shuffledStudents = $students->shuffle();
 
-            // Return the view with the shuffled students and form options
-            return view('student.shuffle_student', compact('sections', 'subjects', 'shuffledStudents'));
+            // Fetch relevant class card information, assuming you want to get the class cards for the selected section and subject
+            $classCards = ClassCard::where('user_id', $teacherId)
+                ->when($subjectId, function ($query) use ($subjectId) {
+                    return $query->where('subject_id', $subjectId);
+                })
+                ->when($sectionId, function ($query) use ($sectionId) {
+                    return $query->where('section_id', $sectionId);
+                })
+                ->get();
+
+            // Optionally, set the term if it's a part of the request (you can modify how you handle this)
+            $term = $request->input('term'); // Assuming you have a term input in your form
+
+            // Return the view with the shuffled students, class card info, and form options
+            return view('student.shuffle_student', compact('sections', 'subjectId', 'shuffledStudents', 'classCards', 'term'));
         }
 
         // If not a POST request, just show the form
-        return view('student.shuffle_student', compact('sections', 'subjects'));
+        return view('student.shuffle_student', compact('sections', 'subjectId'));
     }
+
+
+    public function storeRecitation(Request $request)
+    {
+        // Validate the input data
+        $request->validate([
+            'term' => 'required|in:1,2,3',
+            'scores.*.score' => 'required|numeric|min:0|max:100',
+            'scores.*.over_score' => 'required|numeric|min:0|max:100',
+            'scores.*.class_card_id' => 'required|exists:class_cards,id',
+        ]);
+    
+        foreach ($request->scores as $studentId => $scoreData) {
+            // Validate that over_score is greater than or equal to score
+            if ($scoreData['score'] > $scoreData['over_score']) {
+                return redirect()->back()->withErrors(['scores.' . $studentId . '.over_score' => 'Over score must be greater than or equal to score.'])->withInput();
+            }
+    
+            // Initialize item number
+            $item = 1;
+    
+            // Find the next available item number
+            while (Score::where('student_id', $studentId)
+                    ->where('term', $request->term)
+                    ->where('type', 3) // Assuming type 3 is for recitation
+                    ->where('item', $item)
+                    ->exists()) {
+                $item++; // Increment item number until a free item number is found
+            }
+    
+            // Save the score
+            $recitationScore = new Score();
+            $recitationScore->student_id = $studentId; // ID of the student
+            $recitationScore->score = $scoreData['score']; // Student's score
+            $recitationScore->over_score = $scoreData['over_score']; // Student's over score
+            $recitationScore->term = $request->term; // Term selected from the dropdown
+            $recitationScore->class_card_id = $scoreData['class_card_id']; // Class card ID for the student
+            $recitationScore->type = 3; // Type for recitation
+            $recitationScore->item = $item; // Set the next available item number
+            $recitationScore->save(); // Save the score record
+        }
+    
+        return redirect()->back()->with('success', 'Recitation scores saved successfully!');
+    }
+    
 
     public function groupShuffle(Request $request)
     {
@@ -317,7 +369,7 @@ class StudentController extends Controller
             $studentsPerGroup = $request->input('students_per_group');
 
             // Fetch students based on the selected subject and section
-            $students = Student::where('user_id', $teacherId)
+            $students = ClassCard::with('student')->where('user_id', $teacherId)
                 ->when($subjectId, function ($query) use ($subjectId) {
                     return $query->where('subject_id', $subjectId);
                 })
@@ -340,7 +392,7 @@ class StudentController extends Controller
             }
 
             // Return the view with the groups and form options
-            return view('student.group_shuffle', compact('sections', 'subjects', 'groups'));
+            return view('student.group_shuffle', compact('sections', 'subjects', 'groups', 'studentsPerGroup', 'subjectId', 'sectionId'));
         }
 
         // If not a POST request, just show the form

@@ -7,6 +7,7 @@ use App\Models\Student;
 use App\Models\ClassCard;
 use App\Models\Score;
 use App\Models\Section;
+use App\Models\Enrollment;
 use App\Models\Subject;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -17,32 +18,40 @@ class ClassCardController extends Controller
     {
         // Get the authenticated teacher's user_id
         $teacherId = auth()->user()->id;
+        $subjectId = $request->input('subject_id');
 
         // Check if there are any students associated with the teacher
-        $students = Student::whereHas('subject', function ($query) use ($teacherId) {
-            $query->where('user_id', $teacherId);
-        })->orderBy('id')->get();
+        $students = Student::where('user_id', $teacherId)
+        ->orderBy('id')->get();
 
-        // If no students are found, return an empty collection to avoid errors
-        if ($students->isEmpty()) {
-            return view('class_card.index', [
-                'students' => collect(), // Pass an empty collection
-                'message' => 'There are no students yet.'
-            ]);
+        // Get enrolled students for the specific subject taught by the teacher
+        $enrolledStudents = ClassCard::with('student', 'subject')
+        ->where('subject_id', $subjectId)
+        ->whereHas('student', function ($query) use ($teacherId) {
+            $query->where('user_id', $teacherId);
+        })
+        ->get();
+
+        // If no enrolled students are found, redirect back with an error message
+        if ($enrolledStudents->isEmpty()) {
+            return redirect()->back()->with('error', 'There are no enrolled students for this subject yet.');
         }
 
         // Retrieve the student_id from the request, if not provided, get the first student's ID
-        $student_id = $request->input('student_id') ?? $students->first()->id;
+        $student_id = $request->input('student_id') ?? $enrolledStudents[0]->student->id;
 
         // Fetch the student, ensuring the student belongs to the authenticated teacher
         $student = $students->find($student_id);
         if (!$student) {
             return redirect()->route('class-card.index')->with('error', 'Student not found.');
         }
-        $subjects = Subject::where('user_id', $teacherId)->get();
+
+        $subjectName = Subject::find($subjectId)->name;
+        
         $sections = Section::where('user_id', $teacherId)->get();
+        
         // Fetch the class card for the student
-        $classCard = ClassCard::where('student_id', $student->id)->first();
+        $classCard = ClassCard::where('student_id', $student->id)->where('subject_id', $subjectId)->first();
 
         // Retrieve scores and group them by term, ensure classCard exists to avoid null references
         $scores = $classCard 
@@ -65,9 +74,11 @@ class ClassCardController extends Controller
         $currentIndex = array_search($student_id, $studentIds);
         $prevStudentId = $currentIndex > 0 ? $studentIds[$currentIndex - 1] : null;
         $nextStudentId = $currentIndex < count($studentIds) - 1 ? $studentIds[$currentIndex + 1] : null;
+
+        $selected_exam_type = $request->input('selected_exam_type');
         // return $scores;
         // Pass data to the view
-        return view('class_card.index', compact('students', 'subjects', 'sections', 'student', 'classCard', 'scores', 'totalScore', 'prevStudentId', 'nextStudentId'));
+        return view('class_card.index', compact('students', 'enrolledStudents', 'subjectName', 'sections', 'student', 'classCard', 'scores', 'totalScore', 'prevStudentId', 'nextStudentId', 'subjectId', 'selected_exam_type'));
     }
 
     public function performanceTaskStore(Request $request)
@@ -141,7 +152,8 @@ class ClassCardController extends Controller
             }
         }
 
-        return redirect()->back()->with('success', 'Performance task saved successfully for all students.');
+        return redirect()->back()->with('success', 'Performance task saved successfully for all students.')
+        ->with('selected_exam_type', $request->term);
     }
 
 
@@ -226,7 +238,7 @@ class ClassCardController extends Controller
         $sectionId = $request->input('section_id');
     
         // Fetch students based on the selected subject and section, load their related section and subject
-        $students = Student::with(['section', 'section.subject']) // Load section and its related subject
+        $students = ClassCard::with(['student', 'section.subject']) // Load section and its related subject
                     ->whereHas('subject', function ($query) use ($subjectId) {
                         if ($subjectId) {
                             $query->where('id', $subjectId);
@@ -237,10 +249,9 @@ class ClassCardController extends Controller
                             $query->where('id', $sectionId);
                         }
                     })
-                    ->get();
+                    ->get()
+                    ->pluck('student');
     
         return response()->json($students);
     }
-    
-
 }

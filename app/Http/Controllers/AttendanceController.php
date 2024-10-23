@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 use App\Models\Student;
-use App\Models\Section;
+use App\Models\ClassCard;
 use App\Models\Subject;
+use App\Models\Section;
 use App\Models\Attendance;
 use Illuminate\Http\Request;
 
@@ -13,12 +14,23 @@ class AttendanceController extends Controller
     {
         // Fetch students or any necessary data
         $teacherId = auth()->user()->id;
+        $subjectId = $request->input('subject_id');
 
-        $students = Student::whereHas('subject', function ($query) use ($teacherId) {
+        $students = Student::where('user_id', $teacherId)->orderBy('id')->get();
+
+        $enrolledStudents = ClassCard::with('student', 'subject')
+        ->where('subject_id', $subjectId)
+        ->whereHas('student', function ($query) use ($teacherId) {
             $query->where('user_id', $teacherId);
-        })->orderBy('id')->get();
+        })
+        ->get();
 
-        $student_id = $request->input('student_id') ?? $students->first()->id;
+        // If no enrolled students are found, redirect back with an error message
+        if ($enrolledStudents->isEmpty()) {
+            return redirect()->back()->with('error', 'There are no enrolled students for this subject yet.');
+        }
+
+        $student_id = $request->input('student_id') ?? $enrolledStudents[0]->student->id;
 
         $student = $students->find($student_id);
         if (!$student) {
@@ -26,7 +38,11 @@ class AttendanceController extends Controller
         }
 
         // Get all student IDs that belong to the teacher
-        $studentIds = $students->pluck('id')->toArray();
+        $studentIds = $enrolledStudents->pluck('student.id')->toArray();
+
+        $subjectName = Subject::find($subjectId)->name;
+
+        $sections = Section::where('user_id', $teacherId)->get();
 
         // Determine previous and next student IDs
         $currentIndex = array_search($student_id, $studentIds);
@@ -37,7 +53,7 @@ class AttendanceController extends Controller
         $attendanceRecords = Attendance::where('student_id', $student_id)->where('type', 1)->get(); // For lectures
         $labAttendanceRecords = Attendance::where('student_id', $student_id)->where('type', 2)->get(); // For labs
         // return $labAttendanceRecords;
-        return view('attendance.index', compact('student', 'prevStudentId', 'nextStudentId', 'attendanceRecords', 'labAttendanceRecords'));
+        return view('attendance.index', compact('student', 'enrolledStudents', 'prevStudentId', 'nextStudentId', 'attendanceRecords', 'labAttendanceRecords', 'sections', 'subjectId', 'subjectName', 'studentIds'));
     }
 
 
@@ -76,6 +92,23 @@ class AttendanceController extends Controller
         }
     }
 
+    public function delete(Request $request)
+    {
+        try {
+            // Find and delete the attendance record based on the provided criteria
+            Attendance::where('student_id', $request->student_id)
+                ->where('subject_id', $request->subject_id)
+                ->where('section_id', $request->section_id)
+                ->where('day', $request->day)
+                ->where('attendance_date', $request->attendance_date)
+                ->where('type', $request->type)
+                ->delete();
+
+            return response()->json(['success' => 'Attendance deleted successfully.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 
     
 }

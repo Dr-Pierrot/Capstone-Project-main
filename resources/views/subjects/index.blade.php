@@ -47,6 +47,11 @@
                         {{ session('success') }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
+                @elseif(session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
                 @endif
 
                 <div class="card" style="background-color: #fff; border: 1px solid #cddfff;">
@@ -56,7 +61,7 @@
                         <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createSubjectModal">
                             Create Subject
                         </button>
-                        <table class="table table-bordered">
+                        <table class="table table-bordered" style="width: 100%;">
                             <thead>
                                 <tr>
                                     <th>ID</th>
@@ -73,9 +78,18 @@
                                         <td>{{ $subject->course_code }}</td>
                                         <td>{{ $subject->name }}</td>
                                         <td>{{ $subject->description }}</td>
-                                        <td>
+                                        <td class="text-center">
                                             <button type="button" class="btn btn-sm btn-primary" onclick="showEditModal({{ json_encode($subject) }})">Edit</button>
                                             <button type="button" class="btn btn-sm btn-danger" onclick="showDeleteModal({{ $subject->id }})">Delete</button>
+                                            <button class="btn btn-sm btn-success dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                                Other
+                                            </button>
+                                            <ul class="dropdown-menu" aria-labelledby="exportDropdown">
+                                                <li><a class="dropdown-item" href="{{ route('subjects.showEnroll', ['subject_id' => $subject->id]) }}">Enroll Students</a></li>
+                                                <li><a class="dropdown-item" href="{{ route('attendance.index', ['subject_id' => $subject->id]) }}">Check Attendance</a></li>
+                                                <li><a class="dropdown-item" href="{{ route('students.shuffle', ['subject_id' => $subject->id]) }}">Manage Recitation</a></li>
+                                                <li><a class="dropdown-item" href="{{ route('class-card.index', ['subject_id' => $subject->id]) }}">Record Grades</a></li>
+                                            </ul>
                                         </td>
                                     </tr>
                                 @endforeach

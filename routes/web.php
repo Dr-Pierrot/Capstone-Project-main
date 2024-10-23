@@ -71,6 +71,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/subjects', [SubjectController::class, 'index'])->name('subjects.index');
     // Route::get('/subjects/create', [SubjectController::class, 'create'])->name('subjects.create');
     Route::post('/subjects', [SubjectController::class, 'store'])->name('subjects.store');
+    Route::get('/subjects/enroll', [SubjectController::class, 'showEnroll'])->name('subjects.showEnroll');
+    Route::post('/subjects/enroll', [SubjectController::class, 'enrollStudents'])->name('subjects.enrolls');
+    Route::delete('/subjects/enroll/{enroll}', [SubjectController::class, 'unEnrollStudent'])->name('subjects.enrolls.destroy');
     // Route::get('/subjects/{subject}/edit', [SubjectController::class, 'edit'])->name('subjects.edit');
     Route::put('/subjects/{subject}', [SubjectController::class, 'update'])->name('subjects.update');
     Route::delete('/subjects/{subject}', [SubjectController::class, 'destroy'])->name('subjects.destroy');
@@ -85,6 +88,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/students/{student}', [StudentController::class, 'destroy'])->name('students.destroy');
     // Route::put('/shuffle', [StudentController::class, 'shuffleStudent'])->name('students.shuffle');
     Route::match(['get', 'post'], '/shuffle', [StudentController::class, 'shuffleStudent'])->name('students.shuffle');
+    Route::post('/shuffle/store', [StudentController::class, 'storeRecitation'])->name('recitation.store');
     Route::match(['get', 'post'], '/group-shuffle', [StudentController::class, 'groupShuffle'])->name('students.group.shuffle');
 
 
@@ -110,7 +114,7 @@ Route::middleware(['auth'])->group(function () {
     })->name('students.exportPeriodicGrades');
 
 
-    Route::get('/class-card', [ClassCardController::class, 'index'])->name('class-card.index');
+    Route::get('/class-card}', [ClassCardController::class, 'index'])->name('class-card.index');
     Route::get('/class-card/filter-students', [ClassCardController::class, 'filterStudents'])->name('class-card.filter-students');
     Route::post('/class-card/performance-task/store', [ClassCardController::class, 'performanceTaskStore'])->name('class-card.performance-task.store');
     Route::put('/class-card/performance-task/update/{score}', [ClassCardController::class, 'performanceTaskUpdate'])->name('class-card.performance-task.update');
@@ -119,6 +123,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
     Route::post('/attendance/store', [AttendanceController::class, 'store'])->name('attendance.store');
+    Route::delete('/attendance/delete', [AttendanceController::class, 'delete'])->name('attendance.delete');
 
 
 // Forgot Password Routes

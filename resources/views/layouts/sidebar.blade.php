@@ -56,23 +56,8 @@
             </a>
         </div>
         <div class="side-link">
-            <a class="nav-link collapsed" href="{{ route('students.shuffle') }}">
-                <i class="bi bi-shuffle"></i><span> Shuffle Students</span>
-            </a>
-        </div>
-        <div class="side-link">
             <a class="nav-link collapsed" href="{{ route('students.group.shuffle') }}">
                 <i class="bi bi-people"></i><span> Shuffle Group</span>
-            </a>
-        </div>
-        <div class="side-link">
-            <a class="nav-link collapsed" href="{{ route('class-card.index') }}">
-                <i class="bi bi-journal"></i><span> Class Cards</span>
-            </a>
-        </div>
-        <div class="side-link">
-            <a class="nav-link collapsed" href="{{ route('attendance.index') }}">
-                <i class="bi bi-journal"></i><span> Attendance</span>
             </a>
         </div>
     @endif
@@ -90,9 +75,4 @@
             </a>
         </div>
     @endif
-    <div class="side-link">
-            <a class="nav-link collapsed" href="{{ route('password.change') }}">
-                <i class="bi bi-key"></i><span> Change Password</span>
-            </a>
-        </div>
 </aside>

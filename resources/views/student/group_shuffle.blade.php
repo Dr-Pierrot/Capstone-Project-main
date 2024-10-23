@@ -31,7 +31,7 @@
                         <option value="">All Subjects</option>
                         @if(isset($subjects))
                             @foreach($subjects as $subject)
-                                <option value="{{ $subject->id }}">{{ $subject->name }}</option>
+                                <option value="{{ $subject->id }}" {{ isset($subjectId) && $subjectId == $subject->id ? 'selected' : '' }}>{{ $subject->name }}</option>
                             @endforeach
                         @endif
                     </select>
@@ -43,7 +43,7 @@
                         <option value="">All Sections</option>
                         @if(isset($sections))
                             @foreach($sections as $section)
-                                <option value="{{ $section->id }}">{{ $section->name }}</option>
+                                <option value="{{ $section->id }}" {{ isset($sectionId) && $sectionId == $section->id ? 'selected' : '' }}>{{ $section->name }}</option>
                             @endforeach
                         @endif
                     </select>
@@ -69,8 +69,6 @@
                                 <th>Count</th>
                                 <th>Student Number</th>
                                 <th>Student Name</th>
-                                <th>Course</th>
-                                <th>Gender</th>
                                 <th>Section</th>
                                 <th>Subject</th>
                             </tr>
@@ -80,10 +78,8 @@
                                 @foreach($group as $student)
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
-                                        <td>{{ $student->student_number }}</td>
-                                        <td>{{ $student->last_name }}, {{ $student->first_name }} {{ $student->middle_name }}</td>
-                                        <td>{{ $student->course }}</td>
-                                        <td>{{ $student->gender }}</td>
+                                        <td>{{ $student->student->student_number }}</td>
+                                        <td>{{ $student->student->last_name }}, {{ $student->first_name }} {{ $student->middle_name }}</td>
                                         <td>{{ $student->section->name }}</td>
                                         <td>{{ $student->subject->name }}</td>
                                     </tr>

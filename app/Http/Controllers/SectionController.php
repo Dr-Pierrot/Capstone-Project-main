@@ -32,6 +32,14 @@ class SectionController extends Controller
             'description' => 'nullable|string',
         ]);
 
+        $sectionExists = Section::where('name', $request->name) 
+            ->exists();
+
+        // Optional: Check if student is already enrolled
+        if ($sectionExists) {
+            return redirect()->back()->with('error', 'Section already exists.');
+        }
+
         Section::create([
             'name' => $request->name,
             'description' => $request->description,
@@ -52,6 +60,14 @@ class SectionController extends Controller
         // Ensure the section belongs to the authenticated user
         if ($section->user_id != Auth::id()) {
             return redirect()->route('sections.index')->with('error', 'You are not authorized to edit this section.');
+        }
+
+        $sectionExists = Section::where('name', $request->name) 
+            ->exists();
+
+        // Optional: Check if student is already enrolled
+        if ($sectionExists) {
+            return redirect()->back()->with('error', 'Section already exists.');
         }
 
         $section->update([

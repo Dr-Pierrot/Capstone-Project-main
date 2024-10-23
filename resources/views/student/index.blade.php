@@ -205,17 +205,6 @@
                             </select>
                         </div>
 
-                        <!-- Subject Dropdown -->
-                        <div class="mb-3">
-                            <label for="subject_id" class="form-label">Subject</label>
-                            <select class="form-select" id="subject_id" name="subject_id" required>
-                                <option value="">Select Subject</option>
-                                @foreach ($subjects as $subject)
-                                    <option value="{{ $subject->id }}">{{ $subject->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
                         <!-- Student Type Dropdown -->
                         <div class="mb-3">
                             <label for="student_type" class="form-label">Student Type</label>
@@ -234,7 +223,7 @@
     </div>
 
     <!-- Edit Student Modal -->
-    <div class="modal fade" id="editStudentModal" tabindex="-1" aria-labelledby="editStudentModalLabel" aria-hidden="true">
+    <div class="modal fade" id="editStudentModal" tabindex="-2" aria-labelledby="editStudentModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -282,16 +271,6 @@
                                 <option value="">Select Section</option>
                                 @foreach ($sections as $section)
                                     <option value="{{ $section->id }}">{{ $section->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="edit_subject_id" class="form-label">Subject</label>
-                            <select class="form-select" id="edit_subject_id" name="subject_id" required>
-                                <option value="">Select Subject</option>
-                                @foreach ($subjects as $subject)
-                                    <option value="{{ $subject->id }}">{{ $subject->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -375,6 +354,4 @@
         </div>
     </div>
 @endsection
-
 <script src="{{ asset('js/students-modal.js') }}"></script>
-

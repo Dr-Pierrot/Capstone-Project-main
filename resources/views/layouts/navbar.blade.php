@@ -33,7 +33,16 @@
                     <li>
                         <hr class="dropdown-divider">
                     </li>
-  
+    
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center" href="{{ route('password.change') }}">
+                            <i class="bi bi-key"></i>
+                            <span>Change Password</span>
+                        </a>
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                            @csrf
+                        </form>
+                    </li>
                     <!-- Logout Button -->
                     <li>
                         <a class="dropdown-item d-flex align-items-center" href="{{ route('logout') }}"

@@ -19,7 +19,6 @@ class Student extends Model
         'course',
         'user_id',
         'section_id',
-        'subject_id',
         'attendance_id',
         'student_type'
     ];
@@ -36,11 +35,6 @@ class Student extends Model
         return $this->belongsTo(Section::class);
     }
 
-    public function subject()
-    {
-        return $this->belongsTo(Subject::class);
-    }
-
     public function scores()
     {
         return $this->hasMany(Score::class);
@@ -49,5 +43,10 @@ class Student extends Model
     public function attendances()
     {
         return $this->hasMany(Attendance::class);
+    }
+
+    public function enrollments()
+    {
+        return $this->hasMany(ClassCard::class);
     }
 }

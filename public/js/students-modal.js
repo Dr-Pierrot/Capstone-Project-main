@@ -26,4 +26,3 @@ function showDeleteModal(studentId) {
     const deleteModal = new bootstrap.Modal(document.getElementById('deleteStudentModal'));
     deleteModal.show();
 }
-
