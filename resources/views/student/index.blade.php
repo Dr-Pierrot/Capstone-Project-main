@@ -71,7 +71,7 @@
                             </button>
 
                             <a href="{{ route('students.exportStudentSheet') }}" class="btn btn-primary mb-3">
-                                Export Student Sheet Template
+                                Generate Sheet
                             </a>
                             </div>
                             <div class="col-6 text-end">
