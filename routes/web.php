@@ -84,7 +84,10 @@ Route::middleware(['auth'])->group(function () {
     route::get('students/create', [StudentController::class, 'create'])->name('students.create');
     Route::post('students/store', [StudentController::class, 'store'])->name('students.store');
     Route::put('/students/{student}', [StudentController::class, 'update'])->name('students.update');
-    route::post('/students/upload-csv', [StudentController::class, 'uploadCSV'])->name('students.uploadCSV');});
+    route::post('/students/upload-csv', [StudentController::class, 'uploadCSV'])->name('students.uploadCSV');
+    Route::get('/export-student-template', [StudentController::class, 'exportStudents'])->name('students.exportStudentSheet');
+    route::post('/students/upload-excel', [StudentController::class, 'uploadExcel'])->name('students.uploadExcel'); });
+
     Route::delete('/students/{student}', [StudentController::class, 'destroy'])->name('students.destroy');
     // Route::put('/shuffle', [StudentController::class, 'shuffleStudent'])->name('students.shuffle');
     Route::match(['get', 'post'], '/shuffle', [StudentController::class, 'shuffleStudent'])->name('students.shuffle');

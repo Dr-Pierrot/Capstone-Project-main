@@ -61,34 +61,36 @@
                         <h5 class="card-title">Enroll Students - {{ $subject->name }}</h5>
                     </div>
                     <div class="card-body">
-                        <form action="{{ route('subjects.enrolls') }}" method="POST">
-                            @csrf
-                            <input type="hidden" name="subject_id" value="{{ $subject->id }}">
-                            <div class="row mt-3">
-                                <div class="col-4">
-                                    <select name="section_id" id="section" class="form-control" onchange="filterSection(this.value)">
-                                        <option value="">Select Section</option>
-                                        @foreach ($sections as $section)
-                                            <option value="{{ $section->id }}">{{ $section->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-4">
-                                    <select name="student_id" id="student_id" class="form-control">
-                                        <option value="">Select Student</option>
-                                        @foreach ($students as $student)
-                                            <option value="{{ $student->id }}">{{ $student->first_name }} {{ $student->middle_name }} {{ $student->last_name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-4">
-                                    <!-- Button to trigger modal -->
-                                    <button type="submit" class="btn btn-primary mb-3">
-                                        Enroll Student
-                                    </button>
-                                </div>
+                    <form id="enrollForm" action="{{ route('subjects.enrolls') }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="subject_id" value="{{ $subject->id }}">
+                        <input type="hidden" name="enroll_type" id="enroll_type" value="single"> <!-- New hidden field -->
+                        <div class="row mt-3">
+                            <div class="col-4">
+                                <select name="section_id" id="section" class="form-control" onchange="filterSection(this.value)">
+                                    <option value="">Select Section</option>
+                                    @foreach ($sections as $section)
+                                        <option value="{{ $section->id }}">{{ $section->name }}</option>
+                                    @endforeach
+                                </select>
                             </div>
-                        </form>
+                            <div class="col-4">
+                                <select name="student_id" id="student_id" class="form-control" onchange="setEnrollType(this.value)">
+                                    <option value="">Select Student</option>
+                                    @foreach ($students as $student)
+                                        <option value="{{ $student->id }}">{{ $student->first_name }} {{ $student->middle_name }} {{ $student->last_name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-4">
+                                <!-- Button to trigger modal -->
+                                <button type="submit" class="btn btn-primary mb-3">
+                                    Enroll Student
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
 
                         <div class="row">
                             <div class="col-12">
@@ -106,11 +108,11 @@
                                                 <td>{{ $enroll->student->first_name }} {{ $enroll->student->middle_name }} {{ $enroll->student->last_name }}</td>
                                                 <td>{{ $enroll->student->section->name }}</td>
                                                 <td>
-                                                    <form action="{{ route('subjects.enrolls.destroy', $enroll->id) }}" method="POST">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="btn btn-danger">Delete</button>
-                                                    </form>
+                                                <form action="{{ route('subjects.enrolls.destroy', $enroll->id) }}" method="POST" onsubmit="return confirmDelete();">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                                </form>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -135,6 +137,14 @@
                     studentSelect.innerHTML += '<option value="{{ $student->id }}">{{ $student->first_name }} {{ $student->middle_name }} {{ $student->last_name }}</option>';
                 }
             @endforeach
+            setEnrollType('');
+        }
+        function setEnrollType(studentID) {
+            const enrollTypeField = document.getElementById('enroll_type');
+            enrollTypeField.value = studentID ? 'single' : 'section'; // Set to 'single' if a student is selected, otherwise 'section'
+        }
+        function confirmDelete() {
+            return confirm("Are you sure you want to delete this enrollment?");
         }
     </script>
     

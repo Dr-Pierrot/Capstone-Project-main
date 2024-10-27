@@ -46,6 +46,11 @@
                         {{ session('success') }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
+                @elseif(session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
                 @endif
 
                 <div class="card">
@@ -61,9 +66,13 @@
                                 Add Student
                             </button>
 
-                            <button type="button" class="btn btn-secondary mb-3" data-bs-toggle="modal" data-bs-target="#uploadCSVModal">
-                                Upload CSV
+                            <button type="button" class="btn btn-secondary mb-3" data-bs-toggle="modal" data-bs-target="#uploadExcelModal">
+                                Upload Excel
                             </button>
+
+                            <a href="{{ route('students.exportStudentSheet') }}" class="btn btn-primary mb-3">
+                                Export Student Sheet Template
+                            </a>
                             </div>
                             <div class="col-6 text-end">
                                 <div class="dropdown mb-3">
@@ -85,16 +94,6 @@
                         <!-- Dropdowns for filtering -->
                         <form method="GET" action="{{ route('students.index') }}">
                             <div class="row mb-3">
-                                <div class="col-md-5">
-                                    <select class="form-control" name="subject_id">
-                                        <option value="">All</option>
-                                        @foreach($subjects as $subject)
-                                            <option value="{{ $subject->id }}" {{ request('subject_id') == $subject->id ? 'selected' : '' }}>
-                                                {{ $subject->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
                                 <div class="col-md-5">
                                     <select class="form-control" name="section_id">
                                         <option value="">All</option>
@@ -314,20 +313,20 @@
         </div>
     </div>
 
-    <!-- Upload CSV Modal -->
-    <div class="modal fade" id="uploadCSVModal" tabindex="-1" aria-labelledby="uploadCSVModalLabel" aria-hidden="true">
+    <!-- Upload Excel Modal -->
+    <div class="modal fade" id="uploadExcelModal" tabindex="-1" aria-labelledby="uploadExcelModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="uploadCSVModalLabel">Upload CSV</h5>
+                    <h5 class="modal-title" id="uploadExcelModalLabel">Upload Excel</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form method="POST" action="{{ route('students.store') }}" enctype="multipart/form-data">
+                    <form method="POST" action="{{ route('students.uploadExcel') }}" enctype="multipart/form-data">
                         @csrf
                         <div class="mb-3">
-                            <label for="csv_file" class="form-label">CSV File</label>
-                            <input type="file" class="form-control" id="csv_file" name="csv_file" accept=".csv" required>
+                            <label for="excel_file" class="form-label">Excel File</label>
+                            <input type="file" class="form-control" id="excel_file" name="excel_file" accept=".xlsx" required>
                         </div>
                         <div class="mb-3">
                             <label for="section_id" class="form-label">Section</label>
@@ -335,15 +334,6 @@
                                 <option value="">Select Section</option>
                                 @foreach ($sections as $section)
                                     <option value="{{ $section->id }}">{{ $section->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="subject_id" class="form-label">Subject</label>
-                            <select class="form-select" id="subject_id" name="subject_id" required>
-                                <option value="">Select Subject</option>
-                                @foreach ($subjects as $subject)
-                                    <option value="{{ $subject->id }}">{{ $subject->name }}</option>
                                 @endforeach
                             </select>
                         </div>

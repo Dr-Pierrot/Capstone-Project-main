@@ -7,7 +7,6 @@ function showEditModal(student) {
     document.getElementById('edit_gender').value = student.gender;
     document.getElementById('edit_course').value = student.course;
     document.getElementById('edit_section_id').value = student.section_id; // Set section_id
-    document.getElementById('edit_subject_id').value = student.subject_id; // Set subject_id
     document.getElementById('edit_student_type').value = student.student_type; // Set subject_id
 
     const form = document.getElementById('editForm');

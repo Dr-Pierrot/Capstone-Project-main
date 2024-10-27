@@ -11,7 +11,9 @@ use App\Models\Subject;
 use App\Models\Score;
 use Illuminate\Support\Facades\Log;
 use App\Models\ClassCard;
-
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class StudentController extends Controller
 {
@@ -30,11 +32,6 @@ class StudentController extends Controller
         // Start with the query to fetch students related to the teacher
         $query = Student::where('user_id', $teacherId);
 
-        // Apply subject filter if selected
-        if ($subjectId) {
-            $query->where('subject_id', $subjectId);
-        }
-
         // Apply section filter if selected
         if ($sectionId) {
             $query->where('section_id', $sectionId);
@@ -45,10 +42,9 @@ class StudentController extends Controller
 
         // Fetch sections and subjects related to the teacher for the dropdowns
         $sections = Section::where('user_id', $teacherId)->get();
-        $subjects = Subject::where('user_id', $teacherId)->get();
 
         // Return the view with the list of students and dropdown data
-        return view('student.index', compact('students', 'sections', 'subjects'));
+        return view('student.index', compact('students', 'sections'));
     }
 
     /**
@@ -215,6 +211,127 @@ class StudentController extends Controller
             return redirect()->route('students.index')->with('error', 'An error occurred while uploading the CSV. Please try again.');
         }
     }
+
+    public function exportStudents()
+    {
+        // Create a new Spreadsheet object
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Set the headers
+        $headers = [
+            'Student Number', 'First Name', 'Last Name', 'Middle Name', 
+            'Date of Birth (0000(Y)-00(M)-00(D))', 'Gender', 'Course', 'Student Type'
+        ];
+        $columnIndex = 'A';
+
+        // Add headers to the first row and protect them
+        foreach ($headers as $header) {
+            $sheet->setCellValue($columnIndex . '1', $header);
+            $columnIndex++;
+        }
+
+        // Auto-size each column based on content
+        foreach (range('A', chr(ord('A') + count($headers) - 1)) as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        // Protect the entire sheet with an optional password
+        $sheet->getProtection()->setSheet(true);
+        $sheet->getProtection()->setPassword('your_password'); // Optional password
+
+        // Allow editing in the rows below the header (starting from row 2)
+        foreach (range('A', chr(ord('A') + count($headers) - 1)) as $col) {
+            $sheet->getStyle("{$col}2:{$col}100")->getProtection()->setLocked(
+                \PhpOffice\PhpSpreadsheet\Style\Protection::PROTECTION_UNPROTECTED
+            );
+        }
+
+        // Set the filename
+        $fileName = 'studentSheet.xlsx';
+
+        // Set headers for download
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header("Content-Disposition: attachment; filename=\"$fileName\"");
+
+        // Save the spreadsheet to the output
+        $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $writer->save('php://output');
+        exit;
+    }
+
+    public function uploadExcel(Request $request)
+    {
+        // Validate the uploaded Excel file and associated fields
+        $request->validate([
+            'excel_file' => 'required|file|mimes:xlsx',
+            'section_id' => 'required|exists:sections,id',
+        ]);
+
+        // Load the spreadsheet
+        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($request->file('excel_file')->getRealPath());
+        $sheet = $spreadsheet->getActiveSheet();
+        $highestRow = $sheet->getHighestRow();
+
+        // Retrieve student types
+        $validStudentTypes = ['regular', 'irregular'];
+
+        // Loop through each row of the spreadsheet (starting from row 2 to skip headers)
+        for ($row = 2; $row <= $highestRow; $row++) {
+            // Retrieve each cell's value
+            $studentNumber = $sheet->getCell("A$row")->getValue();
+            $firstName = $sheet->getCell("B$row")->getValue();
+            $lastName = $sheet->getCell("C$row")->getValue();
+            $middleName = $sheet->getCell("D$row")->getValue();
+            $dateOfBirth = $sheet->getCell("E$row")->getValue(); // Assuming this is the date of birth
+            $gender = $sheet->getCell("F$row")->getValue();
+            $course = $sheet->getCell("G$row")->getValue();
+            $studentType = $sheet->getCell("H$row")->getValue();
+
+            // Check if student type is empty or the row is effectively empty
+            if (empty($studentNumber) && empty($firstName) && empty($lastName)) {
+                break; // Stop processing if the row is empty
+            }
+
+            // Validate student type
+            if (!empty($studentType) && !in_array(strtolower($studentType), $validStudentTypes)) {
+                return redirect()->back()->with('error', "Invalid student type on row $row. Allowed values are: " . implode(', ', $validStudentTypes));
+            }
+
+            // Validate and format date of birth
+            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateOfBirth)) {
+                $dateOfBirthFormatted = (new \DateTime($dateOfBirth))->format('Y-m-d');
+            } else {
+                // If the date format is invalid, handle the error
+                return redirect()->back()->with('error', "Invalid date format on row $row. Expected format is YYYY-MM-DD.");
+            }
+
+            // Now proceed to create the student record
+            Student::create([
+                'student_number' => $studentNumber,
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'middle_name' => $middleName,
+                'date_of_birth' => $dateOfBirthFormatted,
+                'gender' => $gender,
+                'course' => $course,
+                'student_type' => strtolower($studentType),
+                'section_id' => $request->section_id,
+                'user_id' => auth()->user()->id,
+            ]);
+        }
+
+        // Redirect back to the students index page with a success message
+        return redirect()->route('students.index')->with('success', 'Excel file uploaded and students imported successfully.');
+    }
+
+
+
+
+
+
+
+
 
     public function shuffleStudent(Request $request)
     {
