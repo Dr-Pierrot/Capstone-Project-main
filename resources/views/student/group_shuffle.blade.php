@@ -53,8 +53,10 @@
                     <label for="students_per_group">Number of Students Per Group:</label>
                     <input type="number" class="form-control" id="students_per_group" name="students_per_group" min="1" required>
                 </div>
-
-                <button type="submit" class="btn btn-primary" style="background-color:#E3A833;border-color: #E3A833;">Shuffle into Groups</button>
+                <br>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" style="background-color:#E3A833;border-color: #E3A833;">Shuffle into Groups</button>
+                </div>
             </form>
 
             <h5 class="mt-4" style="color: #E3A833;">Student Groups:</h5>

@@ -51,44 +51,6 @@ class StudentController extends Controller
         return view('student.index', compact('students', 'sections', 'subjects'));
     }
 
-    public function getStudentApi(Request $request)
-    {
-        // Get the currently authenticated teacher's ID
-        $teacherId = Auth::id();
-
-        // Fetch the subject and section filter from the request
-        // $subjectId = $request->input('subject_id');
-        // $sectionId = $request->input('section_id');
-
-        // Start with the query to fetch students related to the teacher
-        $query = Student::where('user_id', $teacherId);
-
-        // // Apply subject filter if selected
-        // if ($subjectId) {
-        //     $query->where('subject_id', $subjectId);
-        // }
-
-        // // Apply section filter if selected
-        // if ($sectionId) {
-        //     $query->where('section_id', $sectionId);
-        // }
-
-        // Get the filtered or unfiltered list of students, ordered by id in descending order
-        $students = $query->orderBy('id', 'desc')->get();
-
-        // Fetch sections and subjects related to the teacher for the dropdowns
-        // $sections = Section::where('user_id', $teacherId)->get();
-        // $subjects = Subject::where('user_id', $teacherId)->get();
-
-        // Return the view with the list of students and dropdown data
-        // return view('student.index', compact('students', 'sections', 'subjects'));
-        return response()->json([
-            'success' => true,
-            'students' => $students, // Return the token
-        ]);
-    }
-
-
     /**
      * Show the form for creating a new resource.
      */
@@ -189,7 +151,6 @@ class StudentController extends Controller
         return redirect()->route('students.index')->with('success', 'Student updated successfully.');
     }
 
-
     
     /**
      * Remove the specified resource from storage.
@@ -255,7 +216,6 @@ class StudentController extends Controller
         }
     }
 
-
     public function shuffleStudent(Request $request)
     {
         // Get the authenticated teacher ID
@@ -273,6 +233,10 @@ class StudentController extends Controller
         // Check if the request is a POST (form submission)
         if ($request->isMethod('post')) {
             $sectionId = $request->input('section_id');
+
+            if($sectionId == "") {
+                return redirect()->back()->with('error', 'Please Select a section first!');
+            }
 
             // Fetch students based on the selected subject and section
             $students = ClassCard::with('student')->where('user_id', $teacherId)
@@ -398,5 +362,79 @@ class StudentController extends Controller
         // If not a POST request, just show the form
         return view('student.group_shuffle', compact('sections', 'subjects'));
     }
+
+    public function getStudentApi(Request $request)
+    {
+        // Get the currently authenticated teacher's ID
+        $teacherId = Auth::id();
+
+        // Fetch the subject and section filter from the request
+        // $subjectId = $request->input('subject_id');
+        // $sectionId = $request->input('section_id');
+
+        // Start with the query to fetch students related to the teacher
+        $query = Student::where('user_id', $teacherId);
+
+        // // Apply subject filter if selected
+        // if ($subjectId) {
+        //     $query->where('subject_id', $subjectId);
+        // }
+
+        // // Apply section filter if selected
+        // if ($sectionId) {
+        //     $query->where('section_id', $sectionId);
+        // }
+
+        // Get the filtered or unfiltered list of students, ordered by id in descending order
+        $students = $query->orderBy('id', 'desc')->get();
+
+        // Fetch sections and subjects related to the teacher for the dropdowns
+        // $sections = Section::where('user_id', $teacherId)->get();
+        // $subjects = Subject::where('user_id', $teacherId)->get();
+
+        // Return the view with the list of students and dropdown data
+        // return view('student.index', compact('students', 'sections', 'subjects'));
+        return response()->json([
+            'success' => true,
+            'students' => $students, // Return the token
+        ]);
+    }
+
+    public function storeStudentApi(Request $request)
+    {
+        // Validate the incoming request
+        $request->validate([
+            'student_number' => 'required|string|max:255',
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'middle_name' => 'required|string|max:255',
+            'date_of_birth' => 'required|date',
+            'gender' => 'required|string|max:255',
+            'course' => 'required|string|max:255',
+            'section_id' => 'required|exists:sections,id', // Ensure section_id exists in sections table
+            'student_type' => 'nullable|in:regular,irregular', // Validation for student_type
+        ]);
+
+        // Create the student
+        $student = Student::create([
+            'student_number' => $request->student_number,
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'middle_name' => $request->middle_name,
+            'date_of_birth' => $request->date_of_birth,
+            'gender' => $request->gender,
+            'course' => $request->course,
+            'section_id' => $request->section_id,
+            'user_id' => Auth::id(), // Associate the student with the authenticated user
+            'student_type' => $request->student_type,
+        ]);
+
+        // Return a success response
+        return response()->json([
+            'success' => true,
+            'student' => $student, // Include the newly created student in the response
+        ], 201); // 201 Created
+    }
+
 
 }

@@ -41,7 +41,7 @@
                 <div class="form-group">
                     <label for="section">Select Section:</label>
                     <select class="form-control" id="section" name="section_id">
-                        <option value="">All Sections</option>
+                        <option value="">Select a Section</option>
                         @if(isset($sections))
                             @foreach($sections as $section)
                                 <option value="{{ $section->id }}">{{ $section->name }}</option>
@@ -49,7 +49,7 @@
                         @endif
                     </select>
                 </div>
-
+                <br>
                 <button type="submit" class="btn btn-primary" style="background-color:#E3A833;border-color: #E3A833;">Shuffle Recitation</button>
             </form>
             <h5 class="mt-4">Shuffled Students:</h5>
