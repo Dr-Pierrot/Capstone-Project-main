@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Auth\ChangePasswordController;
-use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\SectionController;
@@ -20,6 +19,9 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\ClassCardController;
 use App\Http\Controllers\AttendanceController;
 use App\Exports\StudentsExport;
+use App\Exports\PrelimExport;
+use App\Exports\MidtermExport;
+use App\Exports\FinalsExport;
 use App\Models\Attendance;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\Calculation\Financial\CashFlow\Constant\Periodic;
@@ -99,22 +101,18 @@ Route::middleware(['auth'])->group(function () {
         $teacherId = auth()->user()->id;
         return Excel::download(new StudentsExport($teacherId), 'students.xlsx');
     })->name('students.exportStudents');
-    Route::get('export-attendances', function () {
+    Route::get('export-prelim/{subject_id?}', function ($subject_id = null) {
         $teacherId = auth()->user()->id;
-        return Excel::download(new AttendanceExport($teacherId), 'attendances.xlsx');
-    })->name('students.exportAttendances');
-    Route::get('export-class-standings', function () {
+        return Excel::download(new PrelimExport($teacherId, $subject_id), 'prelimGrade.xlsx');
+    })->name('students.exportPrelim');
+    Route::get('export-miterm/{subject_id?}', function ($subject_id = null) {
         $teacherId = auth()->user()->id;
-        return Excel::download(new ClassStandingExport($teacherId), 'class-standings.xlsx');
-    })->name('students.exportClassStandings');
-    Route::get('export-exams', function () {
+        return Excel::download(new MidtermExport($teacherId, $subject_id), 'midtermGrade.xlsx');
+    })->name('students.exportMidterm');
+    Route::get('export-finals/{subject_id?}', function ($subject_id = null) {
         $teacherId = auth()->user()->id;
-        return Excel::download(new ExamsExport($teacherId), 'exams.xlsx');
-    })->name('students.exportExams');
-    Route::get('export-periodic', function () {
-        $teacherId = auth()->user()->id;
-        return Excel::download(new PeriodicGradesExport($teacherId), 'periodic-grades.xlsx');
-    })->name('students.exportPeriodicGrades');
+        return Excel::download(new FinalsExport($teacherId, $subject_id), 'finalsGrade.xlsx');
+    })->name('students.exportFinals');
 
 
     Route::get('/class-card}', [ClassCardController::class, 'index'])->name('class-card.index');

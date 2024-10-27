@@ -29,11 +29,15 @@ class StudentsExport implements FromCollection, WithHeadings, ShouldAutoSize, Wi
             ->get()
             ->map(function ($student) {
                 return [
-                    'ID' => $student->id,
+                    'Student Number' => $student->student_number,
                     'First Name' => $student->first_name,
                     'Middle Name' => $student->middle_name,
                     'Last Name' => $student->last_name,
-                    'Section' => optional($student->section)->name
+                    'Date of Birth' => $student->date_of_birth,
+                    'Gender' => $student->gender,
+                    'Course' => $student->course,
+                    'Section' => optional($student->section)->name,
+                    'Student Type' => $student->student_type
                 ];
             });
     }
@@ -46,11 +50,15 @@ class StudentsExport implements FromCollection, WithHeadings, ShouldAutoSize, Wi
     public function headings(): array
     {
         return [
-            'ID',
+            'Student Number',
             'First Name',
             'Middle Name',
             'Last Name',
+            'Date of Birth',
+            'Gender',
+            'Course',
             'Section',
+            'Student Type'
         ];
     }
 

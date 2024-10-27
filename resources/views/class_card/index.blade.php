@@ -103,7 +103,7 @@
             <div class="row mb-4">
                 <div class="col-md-3">
                     <label for="exam_type">Select Exam Type:</label>
-                    <select id="exam_type" class="form-control" onchange="showExamTables()">
+                    <select id="exam_type" class="form-control" onchange="saveExamType()">
                         <option value="1" <?php if ($selected_exam_type === '1') echo 'selected'; ?>>Prelim</option>
                         <option value="2" <?php if ($selected_exam_type === '2') echo 'selected'; ?>>Midterm</option>
                         <option value="3" <?php if ($selected_exam_type === '3') echo 'selected'; ?>>Finals</option>
@@ -204,7 +204,7 @@
                                                 <table class="table table-bordered text-center square-table" style="width: 100%;">
                                                     <tbody>
                                                         <tr>
-                                                            <td data-class-card-id="{{ $classCard->id }}" data-student-id="{{ $student->id }}">View</td>
+                                                            <?php echo $scores->get('prelim')->where('type', 'recitation')->isEmpty() ? '<td data-class-card-id="'.$classCard->id.'" data-student-id="'.$student->id.'">No Recitation</td>' : '' ?>
 
                                                             @foreach ($scores->get('prelim')->where('type', 'recitation') as $recitation)
                                                                 <td class="hover" id="prelim-{{ $recitation->id }}" style="min-width: 120px;" onclick="openEditPerformanceModal({{ $recitation->id }}, {{ $recitation->score }}, {{ $recitation->over_score }})">
@@ -268,6 +268,59 @@
                                                             <td class="hover" data-class-card-id="{{ $classCard->id }}" data-student-id="{{ $student->id }}" onclick="openPerformanceModal({{ $classCard->id }}, {{ $student->id }}, 1, 5)">Add</td>
                                                         @endfor
 
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <h6>Prelim Grade</h6>
+
+                                    @php 
+                                        $weight = array(
+                                            'performance_task' => 50,
+                                            'recitation' => 15,
+                                            'quiz' => 25,
+                                            'attendance' => 10,
+                                        );
+
+                                        $prelimScorePT = $totalScore->get('prelim')->where('type', 'performance_task')->sum('score');
+                                        $prelimOverScorePT = $totalScore->get('prelim')->where('type', 'performance_task')->sum('over_score');
+                                        $prelimScoreQuiz = $totalScore->get('prelim')->where('type', 'quiz')->sum('score');
+                                        $prelimOverScoreQuiz = $totalScore->get('prelim')->where('type', 'quiz')->sum('over_score');
+                                        $prelimScoreRecitation = $totalScore->get('prelim')->where('type', 'recitation')->sum('score');
+                                        $prelimOverScoreRecitation = $totalScore->get('prelim')->where('type', 'recitation')->sum('over_score');
+
+                                        
+                                        $prelimClassStanding = 
+                                            (((( $prelimOverScorePT == 0 ? 0:$prelimScorePT / $prelimOverScorePT) * 35 + 65) / 100) * $weight['performance_task'] ) +
+                                            (((( $prelimOverScoreQuiz == 0 ? 0:$prelimScoreQuiz / $prelimOverScoreQuiz) * 35 + 65) / 100) * $weight['quiz']) +
+                                            (((( $prelimOverScoreRecitation == 0 ? 0:$prelimScoreRecitation / $prelimOverScoreRecitation) * 35 + 65) / 100) * $weight['recitation']) +
+                                            (((( $attendanceTotal == 0 ? 0:$attendancePresent / $attendanceTotal) * 35 + 65) / 100) * $weight['attendance'])
+                                        ;
+
+                                        $prelimExamScoreLec = $totalScore->get('prelim')->where('type', 'lec')->sum('score');
+                                        $prelimExamOverScoreLec = $totalScore->get('prelim')->where('type', 'lec')->sum('over_score');
+                                        $prelimExamScoreLab = $totalScore->get('prelim')->where('type', 'lab')->sum('score');
+                                        $prelimExamOverScoreLab = $totalScore->get('prelim')->where('type', 'lab')->sum('over_score');
+
+                                        $prelimExam = 
+                                            (((( $prelimExamOverScoreLec == 0 ? 0:$prelimExamScoreLec / $prelimExamOverScoreLec) * 35 + 65) / 100) * 50) +
+                                            (((( $prelimExamOverScoreLab == 0 ? 0:$prelimExamScoreLab / $prelimExamOverScoreLab) * 35 + 65) / 100) * 50)
+                                        ;
+
+                                    @endphp
+
+
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <table class="table table-bordered text-center square-table">
+                                                <tbody>
+                                                    <tr>
+                                                        <td>Grade</td>
+                                                        <td><strong>{{ number_format(($prelimExam * 0.6) + ($prelimClassStanding * 0.4), 2) }}</strong></td>
                                                     </tr>
                                                 </tbody>
                                             </table>
@@ -435,6 +488,59 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="col-md-12">
+                                    <h6>Midterm Grade</h6>
+
+                                    @php 
+                                        $weight = array(
+                                            'performance_task' => 50,
+                                            'recitation' => 15,
+                                            'quiz' => 25,
+                                            'attendance' => 10,
+                                        );
+
+                                        $midtermScorePT = $totalScore->get('midterm')->where('type', 'performance_task')->sum('score');
+                                        $midtermOverScorePT = $totalScore->get('midterm')->where('type', 'performance_task')->sum('over_score');
+                                        $midtermScoreQuiz = $totalScore->get('midterm')->where('type', 'quiz')->sum('score');
+                                        $midtermOverScoreQuiz = $totalScore->get('midterm')->where('type', 'quiz')->sum('over_score');
+                                        $midtermScoreRecitation = $totalScore->get('midterm')->where('type', 'recitation')->sum('score');
+                                        $midtermOverScoreRecitation = $totalScore->get('midterm')->where('type', 'recitation')->sum('over_score');
+
+                                        
+                                        $midtermClassStanding = 
+                                            (((( $midtermOverScorePT == 0 ? 0:$midtermScorePT / $midtermOverScorePT) * 35 + 65) / 100) * $weight['performance_task'] ) +
+                                            (((( $midtermOverScoreQuiz == 0 ? 0:$midtermScoreQuiz / $midtermOverScoreQuiz) * 35 + 65) / 100) * $weight['quiz']) +
+                                            (((( $midtermOverScoreRecitation == 0 ? 0:$midtermScoreRecitation / $midtermOverScoreRecitation) * 35 + 65) / 100) * $weight['recitation']) +
+                                            (((( $attendanceTotal == 0 ? 0:$attendancePresent / $attendanceTotal) * 35 + 65) / 100) * $weight['attendance'])
+                                        ;
+
+                                        $midtermExamScoreLec = $totalScore->get('midterm')->where('type', 'lec')->sum('score');
+                                        $midtermExamOverScoreLec = $totalScore->get('midterm')->where('type', 'lec')->sum('over_score');
+                                        $midtermExamScoreLab = $totalScore->get('midterm')->where('type', 'lab')->sum('score');
+                                        $midtermExamOverScoreLab = $totalScore->get('midterm')->where('type', 'lab')->sum('over_score');
+
+                                        $midtermExam = 
+                                            (((( $midtermExamOverScoreLec == 0 ? 0:$midtermExamScoreLec / $midtermExamOverScoreLec) * 35 + 65) / 100) * 50) +
+                                            (((( $midtermExamOverScoreLab == 0 ? 0:$midtermExamScoreLab / $midtermExamOverScoreLab) * 35 + 65) / 100) * 50)
+                                        ;
+
+                                    @endphp
+
+
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <table class="table table-bordered text-center square-table">
+                                                <tbody>
+                                                    <tr>
+                                                        <td>Grade</td>
+                                                        <td><strong>{{ number_format(($midtermExam * 0.6) + ($midtermClassStanding * 0.4), 2) }}</strong></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -589,6 +695,59 @@
                                                             <td class="hover" data-class-card-id="{{ $classCard->id }}" data-student-id="{{ $student->id }}" onclick="openPerformanceModal({{ $classCard->id }}, {{ $student->id }}, 1, 5)">Add</td>
                                                         @endfor
 
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <h6>Finals Grade</h6>
+
+                                    @php 
+                                        $weight = array(
+                                            'performance_task' => 50,
+                                            'recitation' => 15,
+                                            'quiz' => 25,
+                                            'attendance' => 10,
+                                        );
+
+                                        $finalsScorePT = $totalScore->get('finals')->where('type', 'performance_task')->sum('score');
+                                        $finalsOverScorePT = $totalScore->get('finals')->where('type', 'performance_task')->sum('over_score');
+                                        $finalsScoreQuiz = $totalScore->get('finals')->where('type', 'quiz')->sum('score');
+                                        $finalsOverScoreQuiz = $totalScore->get('finals')->where('type', 'quiz')->sum('over_score');
+                                        $finalsScoreRecitation = $totalScore->get('finals')->where('type', 'recitation')->sum('score');
+                                        $finalsOverScoreRecitation = $totalScore->get('finals')->where('type', 'recitation')->sum('over_score');
+
+                                        
+                                        $finalsClassStanding = 
+                                            (((( $finalsOverScorePT == 0 ? 0:$finalsScorePT / $finalsOverScorePT) * 35 + 65) / 100) * $weight['performance_task'] ) +
+                                            (((( $finalsOverScoreQuiz == 0 ? 0:$finalsScoreQuiz / $finalsOverScoreQuiz) * 35 + 65) / 100) * $weight['quiz']) +
+                                            (((( $finalsOverScoreRecitation == 0 ? 0:$finalsScoreRecitation / $finalsOverScoreRecitation) * 35 + 65) / 100) * $weight['recitation']) +
+                                            (((( $attendanceTotal == 0 ? 0:$attendancePresent / $attendanceTotal) * 35 + 65) / 100) * $weight['attendance'])
+                                        ;
+
+                                        $finalsExamScoreLec = $totalScore->get('finals')->where('type', 'lec')->sum('score');
+                                        $finalsExamOverScoreLec = $totalScore->get('finals')->where('type', 'lec')->sum('over_score');
+                                        $finalsExamScoreLab = $totalScore->get('finals')->where('type', 'lab')->sum('score');
+                                        $finalsExamOverScoreLab = $totalScore->get('finals')->where('type', 'lab')->sum('over_score');
+
+                                        $finalsExam = 
+                                            (((( $finalsExamOverScoreLec == 0 ? 0:$finalsExamScoreLec / $finalsExamOverScoreLec) * 35 + 65) / 100) * 50) +
+                                            (((( $finalsExamOverScoreLab == 0 ? 0:$finalsExamScoreLab / $finalsExamOverScoreLab) * 35 + 65) / 100) * 50)
+                                        ;
+
+                                    @endphp
+
+
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <table class="table table-bordered text-center square-table">
+                                                <tbody>
+                                                    <tr>
+                                                        <td>Grade</td>
+                                                        <td><strong>{{ number_format(($finalsExam * 0.6) + ($finalsClassStanding * 0.4), 2) }}</strong></td>
                                                     </tr>
                                                 </tbody>
                                             </table>
@@ -759,21 +918,38 @@
 
     <script src="{{ asset('js/class-card.js') }}"></script>
     <script>
+        // Function to save the selected exam type in local storage
+        function saveExamType() {
+            const examType = document.getElementById('exam_type').value;
+            localStorage.setItem('selectedExamType', examType); // Save selected exam type to local storage
+            showExamTables(); // Call function to show the corresponding table
+        }
+
+        // Function to show the tables based on the selected exam type
         function showExamTables() {
             const examType = document.getElementById('exam_type').value;
             const examTables = document.querySelectorAll('.exam-tables');
-            
+
             examTables.forEach(table => {
                 table.style.display = 'none'; // Hide all tables
             });
-    
+
             if (examType === '1') {
                 document.getElementById('prelim-tables').style.display = 'block'; // Show prelim tables
             } else if (examType === '2') {
                 document.getElementById('midterm-tables').style.display = 'block'; // Show midterm tables
             } else if (examType === '3') {
                 document.getElementById('finals-tables').style.display = 'block'; // Show finals tables
-            } 
-        }    
+            }
+        }
+
+        // On page load, check local storage for the selected exam type
+        window.onload = function() {
+            const savedExamType = localStorage.getItem('selectedExamType');
+            if (savedExamType) {
+                document.getElementById('exam_type').value = savedExamType; // Set the dropdown to the saved value
+                showExamTables(); // Show the corresponding table
+            }
+        };
     </script>
 @endsection

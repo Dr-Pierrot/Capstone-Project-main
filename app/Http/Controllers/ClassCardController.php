@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attendance;
 use Illuminate\Http\Request;
 use App\Models\Student;
 use App\Models\ClassCard;
@@ -9,6 +10,7 @@ use App\Models\Score;
 use App\Models\Section;
 use App\Models\Enrollment;
 use App\Models\Subject;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
@@ -67,8 +69,16 @@ class ClassCardController extends Controller
         $totalScore = $scores->put('midterm', $scores->get('midterm', collect())); 
         $totalScore = $scores->put('finals', $scores->get('finals', collect())); 
 
+        $attendancePresent = 
+            Attendance::where('subject_id', $subjectId)->where('type', 1)->where('status', 1)->where('student_id', $student_id)->count() +
+            Attendance::where('subject_id', $subjectId)->where('type', 2)->where('status', 1)->where('student_id', $student_id)->count();
+        $attendanceTotal = 
+            Attendance::where('subject_id', $subjectId)->where('type', 1)->where('student_id', $student_id)->count() +
+            Attendance::where('subject_id', $subjectId)->where('type', 2)->where('student_id', $student_id)->count();
+
+
         // Get all student IDs that belong to the teacher
-        $studentIds = $students->pluck('id')->toArray();
+        $studentIds = $enrolledStudents->pluck('student_id')->toArray();
 
         // Determine previous and next student IDs
         $currentIndex = array_search($student_id, $studentIds);
@@ -78,7 +88,7 @@ class ClassCardController extends Controller
         $selected_exam_type = $request->input('selected_exam_type');
         // return $scores;
         // Pass data to the view
-        return view('class_card.index', compact('students', 'enrolledStudents', 'subjectName', 'sections', 'student', 'classCard', 'scores', 'totalScore', 'prevStudentId', 'nextStudentId', 'subjectId', 'selected_exam_type'));
+        return view('class_card.index', compact('attendancePresent', 'attendanceTotal', 'students', 'enrolledStudents', 'subjectName', 'sections', 'student', 'classCard', 'scores', 'totalScore', 'prevStudentId', 'nextStudentId', 'subjectId', 'selected_exam_type'));
     }
 
     public function performanceTaskStore(Request $request)
@@ -152,7 +162,7 @@ class ClassCardController extends Controller
             }
         }
 
-        return redirect()->back()->with('success', 'Performance task saved successfully for all students.')
+        return redirect()->back()->with('success', 'Score saved successfully for all students.')
         ->with('selected_exam_type', $request->term);
     }
 
@@ -202,7 +212,7 @@ class ClassCardController extends Controller
             ->where('id', '!=', $score->id) // Exclude the current score from being updated
             ->update(['over_score' => $request->over_score]); // Update the over_score for all matching scores
 
-        return redirect()->back()->with('success', 'Performance task updated successfully.');
+        return redirect()->back()->with('success', 'Score updated successfully.');
     }
 
 
@@ -223,9 +233,9 @@ class ClassCardController extends Controller
 
         // Check if any rows were actually deleted
         if ($deletedRows > 0) {
-            return response()->json(['message' => 'Performance tasks deleted successfully.'], 200);
+            return response()->json(['message' => 'Score deleted successfully.'], 200);
         } else {
-            return response()->json(['message' => 'No matching performance tasks found.'], 404);
+            return response()->json(['message' => 'No matching score found.'], 404);
         }
     }
 

@@ -75,18 +75,7 @@
                             </a>
                             </div>
                             <div class="col-6 text-end">
-                                <div class="dropdown mb-3">
-                                    <button class="btn btn-success dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                        Export
-                                    </button>
-                                    <ul class="dropdown-menu" aria-labelledby="exportDropdown">
-                                        <li><a class="dropdown-item" href="{{ route('students.exportStudents') }}">Export Students</a></li>
-                                        <li><a class="dropdown-item" href="{{ route('students.exportAttendances') }}">Export Attendance</a></li>
-                                        <li><a class="dropdown-item" href="{{ route('students.exportClassStandings') }}">Export Class Standing</a></li>
-                                        <li><a class="dropdown-item" href="{{ route('students.exportExams') }}">Export Exams</a></li>
-                                        <li><a class="dropdown-item" href="{{ route('students.exportPeriodicGrades') }}">Export Periodic Grades</a></li>
-                                    </ul>
-                                </div>
+                                <a href="{{ route('students.exportStudents') }}" class="btn btn-success">Export Students</a>
                             </div>
                         </div>
                         
