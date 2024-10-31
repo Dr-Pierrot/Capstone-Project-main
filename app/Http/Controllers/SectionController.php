@@ -22,7 +22,7 @@ class SectionController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $sectionExists = Section::where('name', $request->name) 
+        $sectionExists = Section::where('name', $request->name)->where('user_id', Auth::id())
             ->exists();
 
         // Optional: Check if student is already enrolled
@@ -52,7 +52,7 @@ class SectionController extends Controller
             return redirect()->route('sections.index')->with('error', 'You are not authorized to edit this section.');
         }
 
-        $sectionExists = Section::where('name', $request->name) 
+        $sectionExists = Section::where('name', $request->name)->where('user_id', Auth::id())
             ->exists();
 
         // Optional: Check if student is already enrolled
