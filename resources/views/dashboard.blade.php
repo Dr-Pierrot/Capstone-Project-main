@@ -46,30 +46,24 @@
         <!-- Total Students Card -->
         <div class="col-md-4 mb-4">
             <div class="card">
-                <div class="card-body">
-                    <h3>{{ $studentsCount }}</h3>
-                    <p>Total Students</p>
-                </div>
+                <h3>{{ $studentsCount }}</h3>
+                <p>Total Students</p>
             </div>
         </div>
 
         <!-- Total Subjects Card -->
         <div class="col-md-4 mb-4">
             <div class="card">
-                <div class="card-body">
-                    <h3>{{ $subjectsCount }}</h3>
-                    <p>Total Subjects</p>
-                </div>
+                <h3>{{ $subjectsCount }}</h3>
+                <p>Total Subjects</p>
             </div>
         </div>
 
         <!-- Total Sections Card -->
         <div class="col-md-4 mb-4">
             <div class="card">
-                <div class="card-body">
-                    <h3>{{ $sectionsCount }}</h3>
-                    <p>Total Sections</p>
-                </div>
+                <h3>{{ $sectionsCount }}</h3>
+                <p>Total Sections</p>
             </div>
         </div>
     </div>
