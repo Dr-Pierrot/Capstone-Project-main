@@ -26,7 +26,24 @@
   
     </main><!-- End #main -->
   
-    
+    <!-- ======= Footer ======= -->
+    <footer id="footer" class="footer">
+      <div class="row">
+        <div class="col-12 text-center">
+          <img src="{{ asset('assets/img/dct.svg') }}" alt="logo" height="100" width="100">
+          <img src="{{ asset('assets/img/ccs.png') }}" alt="logo" height="100" width="100">
+        </div>
+      </div>
+      <div class="copyright">
+        <strong>
+          DOMINICAN COLLEGE OF TARLAC
+        </strong>
+      </div>
+      <div class="credits">
+        A.Y: 2024 - 2025
+      </div>
+    </footer><!-- End Footer -->
+
     @include('includes.script')
 
 </body>
