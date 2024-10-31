@@ -299,11 +299,15 @@ class StudentController extends Controller
             }
 
             // Validate and format date of birth
-            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateOfBirth)) {
+            $dateOfBirthFormatted = null;
+            // Try parsing the date in multiple formats
+            if (is_numeric($dateOfBirth)) {
+                // Convert the Excel serial date to YYYY-MM-DD format
+                $dateOfBirthFormatted = $this->excelDateToDate($dateOfBirth);
+            } elseif (preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateOfBirth)) {
                 $dateOfBirthFormatted = (new \DateTime($dateOfBirth))->format('Y-m-d');
             } else {
-                // If the date format is invalid, handle the error
-                return redirect()->back()->with('error', "Invalid date format on row $row. Expected format is YYYY-MM-DD.");
+                return redirect()->back()->with('error', "Invalid date format on row $row.");
             }
 
             // Now proceed to create the student record
@@ -325,6 +329,10 @@ class StudentController extends Controller
         return redirect()->route('students.index')->with('success', 'Excel file uploaded and students imported successfully.');
     }
 
+    function excelDateToDate($excelDate)
+    {
+        return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($excelDate)->format('Y-m-d');
+    }
 
 
 
