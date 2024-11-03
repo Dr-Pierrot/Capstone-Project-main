@@ -525,6 +525,23 @@ class StudentController extends Controller
         ]);
     }
 
+    public function getStudentDetailsApi($id)
+    {
+        $student = Student::where('id', $id)->where('user_id', Auth::id())->first();
+
+        if (!$student) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Student not found or you are not authorized to view it.',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'student' => $student,
+        ]);
+    }
+
     public function storeStudentApi(Request $request)
     {
         // Validate the incoming request
@@ -561,5 +578,63 @@ class StudentController extends Controller
         ], 201); // 201 Created
     }
 
+    public function updateStudentDetailsApi(Request $request, $id)
+    {
+        // Validate the request data
+        $validatedData = $request->validate([
+            'student_number' => 'required|max:255',
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'middle_name' => 'required|string|max:255',
+            'date_of_birth' => 'required|date',
+            'gender' => 'required|string|max:255',
+            'course' => 'required|string|max:255',
+            'section_id' => 'required|exists:sections,id',
+            'student_type' => 'required|in:regular,irregular',
+        ]);
+
+        // Find the subject by ID
+        $student = Student::find($id);
+
+        if (!$student) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Student not found',
+            ], 404);
+        }
+
+        // Update the subject fields
+        $student->student_number = $validatedData['student_number'];
+        $student->first_name = $validatedData['first_name'];
+        $student->last_name = $validatedData['last_name'];
+        $student->middle_name = $validatedData['middle_name'];
+        $student->date_of_birth = $validatedData['date_of_birth'];
+        $student->gender = $validatedData['gender'];
+        $student->course = $validatedData['course'];
+        $student->section_id = $validatedData['section_id'];
+        $student->student_type = $validatedData['student_type'];
+
+        // Save changes
+        $student->save();
+
+        return response()->json([
+            'success' => true,
+            'student' => $student,
+            'message' => 'Student updated successfully',
+        ]);
+    }
+
+    public function destroyStudentApi(Student $student)
+    {
+        // Check if the authenticated user is the owner of the subject
+        if ($student->user_id !== Auth::id()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+        }
+
+        // Delete the subject
+        $student->delete();
+
+        return response()->json(['success' => true, 'message' => 'Student deleted successfully.'], 200);
+    }
 
 }

@@ -172,9 +172,6 @@ class SubjectController extends Controller
         return redirect()->back()->with('error', 'Please select a section or a student.');
     }
 
-
-
-
     public function unEnrollStudent(ClassCard $enroll)
     {
         if ($enroll->user_id !== Auth::id()) {
@@ -282,4 +279,122 @@ class SubjectController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Subject deleted successfully.'], 200);
     }
+
+    public function showEnrollApi(Request $request, $subjectId)
+    {
+        // Get the authenticated teacher's ID
+        $teacherId = Auth::id();
+
+        // Validate that the subject ID exists for the authenticated teacher
+        $subject = Subject::where('user_id', $teacherId)->where('id', $subjectId)->first();
+
+        if (!$subject) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Subject not found.',
+            ]);
+        }
+
+        // Fetch enrolled students for the subject
+        $enrolledStudents = ClassCard::with('student') // Assuming you have a relationship defined in ClassCard for student
+            ->where('subject_id', $subjectId)
+            ->get();
+
+        // Format the response data
+        $studentsData = $enrolledStudents->map(function ($classCard) {
+            return [
+                'id' => $classCard->id,
+                'student_id' => $classCard->student_id,
+                'section_id' => $classCard->section_id,
+                'subject_id' => $classCard->subject_id,
+            ];
+        });
+
+        // Return response
+        return response()->json([
+            'success' => true,
+            'class_cards' => $studentsData, // Use 'class_cards' to match your expected response structure
+            'message' => 'Enrolled students retrieved successfully.',
+        ]);
+    }
+
+    public function enrollStudentsApi(Request $request)
+    {
+        // Validate the request data
+        $validatedData = $request->validate([
+            'enroll_type' => 'required|in:single,section',
+        ]);
+
+        // Handle section-based enrollment
+        if ($validatedData['enroll_type'] === 'section' && $request->section_id) {
+            $students = Student::where('section_id', $request->section_id)->get();
+            $enrolledStudents = [];
+            $enrollmentCount = 0;
+
+            foreach ($students as $student) {
+                $enrollmentExists = ClassCard::where('student_id', $student->id)
+                    ->where('subject_id', $request->subject_id)
+                    ->exists();
+
+                if (!$enrollmentExists) {
+                    $classCard = ClassCard::create([
+                        'student_id' => $student->id,
+                        'user_id' => Auth::id(),
+                        'subject_id' => $request->subject_id,
+                        'section_id' => $request->section_id,
+                        'user_id' => Auth::id(),
+                    ]);
+                    $enrolledStudents[] = $classCard;
+                    $enrollmentCount++;
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => "$enrollmentCount students from the selected section enrolled successfully.",
+                'enrolled_students' => $enrolledStudents,
+            ]);
+        }
+
+        // Handle single-student enrollment
+        if ($validatedData['enroll_type'] === 'single' && $request->student_id) {
+            $enrollmentExists = ClassCard::where('student_id', $request->student_id)
+                ->where('subject_id', $request->subject_id)
+                ->exists();
+
+            if ($enrollmentExists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Student is already enrolled in this subject.'
+                ]);
+            }
+
+            $classCard = ClassCard::create([
+                'student_id' => $request->student_id,
+                'user_id' => Auth::id(),
+                'subject_id' => $request->subject_id,
+                'section_id' => $request->section_id,
+                'user_id' => Auth::id(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Student enrolled successfully.',
+                'enrolled_student' => $classCard,
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' =>  'Please provide either a section or a student to enroll.'
+        ]);
+    }
+
+    public function unenrollStudentApi(ClassCard $enroll)
+    {
+        $enroll->delete();
+        return response()->json(['success' => true, 'message' => 'Student unenrolled successfully.']);
+    }
+
+
 }

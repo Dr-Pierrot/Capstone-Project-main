@@ -6,10 +6,12 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\SectionController;
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Models\Attendance;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,6 +44,16 @@ Route::middleware('auth:sanctum')->get('/subjects/{id}', [SubjectController::cla
 Route::middleware('auth:sanctum')->post('/subjects', [SubjectController::class, 'storeSubjectApi']);
 Route::put('subjects/{subject}', [SubjectController::class, 'updateSubjectDetailsApi']);
 Route::middleware('auth:sanctum')->delete('/subjects/{subject}', [SubjectController::class, 'destroySubjectApi']);
+Route::middleware('auth:sanctum')->get('/subjects/{subject}/enrolled_students', [SubjectController::class, 'showEnrollApi']);
+// Route::get('/subjects/{subject}/enrolled_students', [SubjectController::class, 'showEnrollApi']);
+Route::middleware('auth:sanctum')->post('/subjects/enroll', [SubjectController::class, 'enrollStudentsApi']);
+Route::middleware('auth:sanctum')->delete('/subjects/unenroll/{enroll}', [SubjectController::class, 'unenrollStudentApi']);
+Route::middleware('auth:sanctum')->get('/attendance', [AttendanceController::class, 'getAttendanceApi']);
+Route::middleware('auth:sanctum')->get('/attendance/{id}', [AttendanceController::class, 'getAttendanceDetailsApi']);
+Route::middleware('auth:sanctum')->post('/attendance', [AttendanceController::class, 'storeAttendanceApi']);
+Route::put('attendance/{attendance}', [AttendanceController::class, 'updateAttendanceDetailsApi']);
+Route::middleware('auth:sanctum')->delete('/attendance/{attendance}', [AttendanceController::class, 'destroyAttendanceApi']);
+
 
 Route::get('/sections', [SectionController::class, 'getSectionApi'])->name('api.sections.getSections');
 Route::middleware('auth:sanctum')->get('/sections', [SectionController::class, 'getSectionApi'])->name('api.sections.getSections');

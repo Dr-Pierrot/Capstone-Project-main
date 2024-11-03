@@ -7,6 +7,7 @@ use App\Models\Subject;
 use App\Models\Section;
 use App\Models\Attendance;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AttendanceController extends Controller
 {
@@ -55,7 +56,6 @@ class AttendanceController extends Controller
         // return $labAttendanceRecords;
         return view('attendance.index', compact('student', 'enrolledStudents', 'prevStudentId', 'nextStudentId', 'attendanceRecords', 'labAttendanceRecords', 'sections', 'subjectId', 'subjectName', 'studentIds'));
     }
-
 
     public function store(Request $request)
     {
@@ -110,5 +110,114 @@ class AttendanceController extends Controller
         }
     }
 
-    
+    public function getAttendanceApi(Request $request)
+    {
+        // Fetch all attendance records (this may not be ideal for large datasets)
+        $attendanceRecords = Attendance::all();
+
+        // Return the attendance records in a JSON response
+        return response()->json([
+            'success' => true,
+            'attendances' => $attendanceRecords
+        ]);
+    }
+
+    public function getAttendanceDetailsApi($id)
+    {
+        $attendance = Attendance::where('id', $id)->first();
+
+        if (!$attendance) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Attendance not found or you are not authorized to view it.',
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'attendance' => $attendance,
+        ]);
+    }
+
+    public function storeAttendanceApi(Request $request)
+    {
+        // Validate the incoming request
+        $request->validate([
+            'student_id' => 'required|integer',
+            'subject_id' => 'required|integer',
+            'section_id' => 'required|integer',
+            'day' => 'required|integer',
+            'attendance_date' => 'required|integer', // Ensure this matches the request
+            'type' => 'required|integer',
+            'status' => 'required|integer',
+        ]);
+
+        $attendanceExists = Attendance::where('student_id', $request->student_id)
+                ->where('subject_id', $request->subject_id)
+                ->where('section_id', $request->section_id)
+                ->where('day', $request->day)
+                ->where('attendance_date', $request->attendance_date)
+                ->where('type', $request->type)
+                ->exists();
+        
+        if ($attendanceExists) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Attendance already exists.'
+            ]);
+        }
+
+        // Create the student
+        $attendance = Attendance::create([
+            'student_id' => $request->student_id,
+            'subject_id' => $request->subject_id,
+            'section_id' => $request->section_id,
+            'day' => $request->day,
+            'attendance_date' => $request->attendance_date,
+            'type' => $request->type,
+            'status' => $request->status
+        ]);
+
+        // Return a success response
+        return response()->json([
+            'success' => true,
+            'attendance' => $attendance, // Include the newly created student in the response
+        ], 201); // 201 Created
+    }
+
+    public function updateAttendanceDetailsApi(Request $request, $id)
+    {
+        // Validate the request data
+        $validatedData = $request->validate([
+            'status' => 'required|integer',
+        ]);
+
+        // Find the subject by ID
+        $attendance = Attendance::find($id);
+
+        if (!$attendance) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Attendance not found',
+            ]);
+        }
+
+        // Update the subject fields
+        $attendance->status = $validatedData['status'];
+        // Save changes
+        $attendance->save();
+
+        return response()->json([
+            'success' => true,
+            'attendance' => $attendance,
+            'message' => 'Attendance updated successfully',
+        ]);
+    }
+
+    public function destroyAttendanceApi(Attendance $attendance)
+    {
+        $attendance->delete();
+        return response()->json(['success' => true, 'message' => 'Attendance deleted successfully.']);
+    }
+
 }

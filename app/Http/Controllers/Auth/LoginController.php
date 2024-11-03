@@ -43,6 +43,12 @@ class LoginController extends Controller
             $token = $user->createToken('loginToken')->plainTextToken;
 
             // Send the token and redirect to the dashboard
+            if($user->user_type == 'admin') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Admin not allowed.',
+                ]);
+            }
             return response()->json([
                 'success' => true,
                 'token' => $token, // Return the token
