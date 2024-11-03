@@ -274,7 +274,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-12">
+                                <!-- <div class="col-md-12">
                                     <h6>Prelim Grade</h6>
 
                                     @php 
@@ -326,7 +326,7 @@
                                             </table>
                                         </div>
                                     </div>
-                                </div>
+                                </div> -->
                             </div>
                         </div>
 
@@ -461,7 +461,7 @@
                                                             </td>
                                                         @endforeach
                                                         @for ($i = $scores->get('midterm')->where('type', 'lec')->count(); $i < 1; $i++)
-                                                            <td class="hover" data-class-card-id="{{ $classCard->id }}" data-student-id="{{ $student->id }}" onclick="openPerformanceModal({{ $classCard->id }}, {{ $student->id }}, 1, 4)">Add</td>
+                                                            <td class="hover" data-class-card-id="{{ $classCard->id }}" data-student-id="{{ $student->id }}" onclick="openPerformanceModal({{ $classCard->id }}, {{ $student->id }}, 2, 4)">Add</td>
                                                         @endfor
                                                     
                                                     </tr>
@@ -479,7 +479,7 @@
                                                             </td>
                                                         @endforeach
                                                         @for ($i = $scores->get('midterm')->where('type', 'lab')->count(); $i < 1; $i++)
-                                                            <td class="hover" data-class-card-id="{{ $classCard->id }}" data-student-id="{{ $student->id }}" onclick="openPerformanceModal({{ $classCard->id }}, {{ $student->id }}, 1, 5)">Add</td>
+                                                            <td class="hover" data-class-card-id="{{ $classCard->id }}" data-student-id="{{ $student->id }}" onclick="openPerformanceModal({{ $classCard->id }}, {{ $student->id }}, 2, 5)">Add</td>
                                                         @endfor
 
                                                     </tr>
@@ -488,7 +488,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-12">
+                                <!-- <div class="col-md-12">
                                     <h6>Midterm Grade</h6>
 
                                     @php 
@@ -540,7 +540,7 @@
                                             </table>
                                         </div>
                                     </div>
-                                </div>
+                                </div> -->
                             </div>
                         </div>
 
@@ -674,7 +674,7 @@
                                                             </td>
                                                         @endforeach
                                                         @for ($i = $scores->get('finals')->where('type', 'lec')->count(); $i < 1; $i++)
-                                                            <td class="hover" data-class-card-id="{{ $classCard->id }}" data-student-id="{{ $student->id }}" onclick="openPerformanceModal({{ $classCard->id }}, {{ $student->id }}, 1, 4)">Add</td>
+                                                            <td class="hover" data-class-card-id="{{ $classCard->id }}" data-student-id="{{ $student->id }}" onclick="openPerformanceModal({{ $classCard->id }}, {{ $student->id }}, 3, 4)">Add</td>
                                                         @endfor
                                                     
                                                     </tr>
@@ -692,7 +692,7 @@
                                                             </td>
                                                         @endforeach
                                                         @for ($i = $scores->get('finals')->where('type', 'lab')->count(); $i < 1; $i++)
-                                                            <td class="hover" data-class-card-id="{{ $classCard->id }}" data-student-id="{{ $student->id }}" onclick="openPerformanceModal({{ $classCard->id }}, {{ $student->id }}, 1, 5)">Add</td>
+                                                            <td class="hover" data-class-card-id="{{ $classCard->id }}" data-student-id="{{ $student->id }}" onclick="openPerformanceModal({{ $classCard->id }}, {{ $student->id }}, 3, 5)">Add</td>
                                                         @endfor
 
                                                     </tr>
@@ -701,7 +701,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-12">
+                                <!-- <div class="col-md-12">
                                     <h6>Finals Grade</h6>
 
                                     @php 
@@ -753,7 +753,7 @@
                                             </table>
                                         </div>
                                     </div>
-                                </div>
+                                </div> -->
                             </div>
                         </div>
                     </div>

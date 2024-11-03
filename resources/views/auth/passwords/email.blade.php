@@ -11,39 +11,29 @@
 </head>
 <body>
     <div class="container custom-container">
-        <div class="left-panel">
-            <div class="row">
-                <div class="col-md-6"><img src="assets/img/logo2.png" alt="College Logo"></div>
-                <div class="col-md-6"><img src="assets/img/css.jpeg" alt="College Logo"></div>
+        <div class="card">
+            <div class="card-header text-center">
+                <h2>FORGOT PASSWORD</h2>
+                <hr>
             </div>
-            <h1>ClaSS Monitoring</h1>
-            <p>for the College of Computer Studies at Dominican College of Tarlac</p>
-        </div>
-        <div class="right-panel">
-            <div class="card">
-                <div class="card-header text-center">
-                    <h2>FORGOT PASSWORD</h2>
-                    <hr>
-                </div>
-                <div class="card-body">
-                    @if (session('status'))
-                        <div class="alert alert-success" role="alert">
-                            {{ session('status') }}
-                        </div>
-                    @endif
+            <div class="card-body">
+                @if (session('status'))
+                    <div class="alert alert-success" role="alert">
+                        {{ session('status') }}
+                    </div>
+                @endif
+                
+                <form method="POST" action="{{ route('password.email') }}">
+                    @csrf
+                    <div class="form-group">
+                        <label for="email">Email address</label>
+                        <input type="email" id="email" name="email" class="form-control" required>
+                    </div>
                     
-                    <form method="POST" action="{{ route('password.email') }}">
-                        @csrf
-                        <div class="form-group">
-                            <label for="email">Email address</label>
-                            <input type="email" id="email" name="email" class="form-control" required>
-                        </div>
-                        
-                        <div class="form-group text-center">
-                            <button type="submit" class="btn btn-primary">Send Password Reset Link</button>
-                        </div>
-                    </form>
-                </div>
+                    <div class="form-group text-center">
+                        <button type="submit" class="btn btn-primary">Send Password Reset Link</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

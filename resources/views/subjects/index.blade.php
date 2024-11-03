@@ -90,14 +90,14 @@
                                                 <li><a class="dropdown-item" href="{{ route('students.shuffle', ['subject_id' => $subject->id]) }}">Manage Recitation</a></li>
                                                 <li><a class="dropdown-item" href="{{ route('class-card.index', ['subject_id' => $subject->id]) }}">Record Grades</a></li>
                                             </ul>
-                                            <button class="btn btn-sm btn-success dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <!-- <button class="btn btn-sm btn-success dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                                                 Export
                                             </button>
                                             <ul class="dropdown-menu" aria-labelledby="exportDropdown">
                                                 <li><a class="dropdown-item" href="{{ route('students.exportPrelim', ['subject_id' => $subject->id]) }}">Export Prelim</a></li>
                                                 <li><a class="dropdown-item" href="{{ route('students.exportMidterm', ['subject_id' => $subject->id]) }}">Export Midterm</a></li>
                                                 <li><a class="dropdown-item" href="{{ route('students.exportFinals', ['subject_id' => $subject->id]) }}">Export Finals</a></li>
-                                            </ul>
+                                            </ul> -->
                                         </td>
                                     </tr>
                                 @endforeach
