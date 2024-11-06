@@ -265,11 +265,10 @@ class ClassCardController extends Controller
         return response()->json($students);
     }
 
-    public function getScoresApi($type)
+    public function getScoresApi()
     {
         // Fetch scores based on subject_id and type
-        $scores = Score::where('type', $type)
-                    ->get();
+        $scores = Score::get();
 
         if ($scores->isEmpty()) {
             
