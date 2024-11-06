@@ -264,4 +264,80 @@ class ClassCardController extends Controller
     
         return response()->json($students);
     }
+
+    public function getScoresApi($type)
+    {
+        // Fetch scores based on subject_id and type
+        $scores = Score::where('type', $type)
+                    ->get();
+
+        if ($scores->isEmpty()) {
+            
+            return response()->json([ 
+                'success' => false, 
+                'message' => 'No scores found'
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Scores retrieved successfully',
+            'scores' => $scores
+        ]);
+    }
+
+    public function storeRecitationApi(Request $request)
+    {
+        // Validate the incoming JSON data
+        $request->validate([
+            '*.class_card_id' => 'required|integer',
+            '*.over_score' => 'required|integer',
+            '*.score' => 'required|integer',
+            '*.student_id' => 'required|integer',
+            '*.term' => 'required|integer',
+            '*.type' => 'required|integer',
+        ]);
+
+        // // Retrieve the JSON data
+        $data = $request->json()->all();
+
+        foreach ($data as $item) {
+            // Validate that over_score is greater than or equal to score
+            if ($item['score'] > $item['over_score']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Over score must be greater than or equal to score.',
+                    'data' => $item
+                ], 400); // Return a 400 Bad Request
+            }
+
+            // Initialize item number
+            $itemNumber = 1;
+
+            // Find the next available item number
+            while (Score::where('class_card_id', $item['class_card_id'])
+                    ->where('student_id', $item['student_id'])
+                    ->where('term', $item['term'])
+                    ->where('type', $item['type']) // Type for recitation
+                    ->where('item', $itemNumber)
+                    ->exists()) {
+                $itemNumber++;
+            }
+
+            // Save the score
+            $recitationScore = new Score();
+            $recitationScore->class_card_id = $item['class_card_id'];
+            $recitationScore->student_id = $item['student_id'];
+            $recitationScore->score = $item['score'];
+            $recitationScore->over_score = $item['over_score'];
+            $recitationScore->term = $item['term'];
+            $recitationScore->type = $item['type']; // Type for recitation
+            $recitationScore->item = $itemNumber; // Set the next available item number
+            $recitationScore->save();
+
+        }
+        // Use a database transaction to ensure all-or-nothing behavior
+
+        return response()->json(['message' => 'Recorded Successfully'], 201); // Return a 201 Created status
+    }
 }

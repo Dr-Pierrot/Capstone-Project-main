@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\SectionController;
+use App\Http\Controllers\ClassCardController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -53,7 +54,8 @@ Route::middleware('auth:sanctum')->get('/attendance/{id}', [AttendanceController
 Route::middleware('auth:sanctum')->post('/attendance', [AttendanceController::class, 'storeAttendanceApi']);
 Route::put('attendance/{attendance}', [AttendanceController::class, 'updateAttendanceDetailsApi']);
 Route::middleware('auth:sanctum')->delete('/attendance/{attendance}', [AttendanceController::class, 'destroyAttendanceApi']);
-
+Route::middleware('auth:sanctum')->get('/scores/{type}', [ClassCardController::class, 'getScoresApi']);
+Route::middleware('auth:sanctum')->post('/scores/recitation', [ClassCardController::class, 'storeRecitationApi']);
 
 Route::get('/sections', [SectionController::class, 'getSectionApi'])->name('api.sections.getSections');
 Route::middleware('auth:sanctum')->get('/sections', [SectionController::class, 'getSectionApi'])->name('api.sections.getSections');

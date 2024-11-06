@@ -418,7 +418,8 @@ class StudentController extends Controller
             $item = 1;
     
             // Find the next available item number
-            while (Score::where('student_id', $studentId)
+            while (Score::where('class_card_id', $scoreData['class_card_id'])
+                    ->where('student_id', $studentId)
                     ->where('term', $request->term)
                     ->where('type', 3) // Assuming type 3 is for recitation
                     ->where('item', $item)
