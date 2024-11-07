@@ -56,6 +56,9 @@ Route::put('attendance/{attendance}', [AttendanceController::class, 'updateAtten
 Route::middleware('auth:sanctum')->delete('/attendance/{attendance}', [AttendanceController::class, 'destroyAttendanceApi']);
 Route::middleware('auth:sanctum')->get('/scores', [ClassCardController::class, 'getScoresApi']);
 Route::middleware('auth:sanctum')->post('/scores/recitation', [ClassCardController::class, 'storeRecitationApi']);
+Route::middleware('auth:sanctum')->post('/scores', [ClassCardController::class, 'storeScoresApi']);
+Route::put('/scores/{score}', [ClassCardController::class, 'updateScoreApi']);
+Route::middleware('auth:sanctum')->post('/scores/delete', [ClassCardController::class, 'scoreDeleteApi']);
 
 Route::get('/sections', [SectionController::class, 'getSectionApi'])->name('api.sections.getSections');
 Route::middleware('auth:sanctum')->get('/sections', [SectionController::class, 'getSectionApi'])->name('api.sections.getSections');
