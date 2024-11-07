@@ -339,4 +339,129 @@ class ClassCardController extends Controller
 
         return response()->json(['message' => 'Recorded Successfully'], 201); // Return a 201 Created status
     }
+
+    public function storeScoresApi(Request $request)
+    {
+        // Determine the next item number for the same class card, term, and type of activity
+        $lastItem = Score::where('class_card_id', $request->class_card_id)
+            ->where('term', $request->term)
+            ->where('type', $request->type)
+            ->max('item');
+
+        // Set the item number (start with 1 if none exists)
+        $nextItem = $lastItem ? $lastItem + 1 : 1;
+
+        // Save score for the selected student
+        $score = new Score();
+        $score->class_card_id = $request->class_card_id;
+        $score->student_id = $request->student_id;
+        $score->score = $request->score;
+        $score->over_score = $request->over_score;
+        $score->type = $request->type;
+        $score->item = $nextItem;
+        $score->term = $request->term;
+        $score->save();
+
+        // Get the class card details to find other students in the same subject and section
+        $classCard = ClassCard::find($request->class_card_id);
+
+        // Fetch other students' class cards with the same subject, section, and teacher (user_id)
+        $otherClassCards = ClassCard::where('subject_id', $classCard->subject_id)
+            ->where('section_id', $classCard->section_id)
+            ->where('user_id', $classCard->user_id)
+            ->where('id', '!=', $request->class_card_id)
+            ->get();
+
+        // Add a score of 0 for each of these other students if they don't have an existing score for the same term, type, and item
+        foreach ($otherClassCards as $otherClassCard) {
+            $existingScore = Score::where('class_card_id', $otherClassCard->id)
+                ->where('term', $request->term)
+                ->where('type', $request->type)
+                ->where('item', $nextItem)
+                ->first();
+
+            if (!$existingScore) {
+                $otherScore = new Score();
+                $otherScore->class_card_id = $otherClassCard->id;
+                $otherScore->student_id = $otherClassCard->student_id;
+                $otherScore->score = 0;
+                $otherScore->over_score = $request->over_score;
+                $otherScore->type = $request->type;
+                $otherScore->item = $nextItem;
+                $otherScore->term = $request->term;
+                $otherScore->save();
+            }
+        }
+
+        // Return a JSON response
+        return response()->json([
+            'success' => true,
+            'message' => 'Score saved successfully for all students.',
+        ]);
+    }
+
+    public function updateScoreApi(Request $request, $id)
+    {
+        // Define custom arrays for types and terms
+        $types = [
+            1 => 'performance_task',
+            2 => 'quiz',
+            3 => 'recitation',
+            4 => 'lec',
+            5 => 'lab'
+        ];
+
+        $terms = [
+            1 => 'prelim',
+            2 => 'midterm',
+            3 => 'finals'
+        ];
+
+        $score = Score::find($id);
+
+        // Update the current score
+        $score->update([
+            'score' => $request->score,
+            'over_score' => $request->over_score, // Update the over_score of the current score
+        ]);
+
+        // Store the current numeric term and type for further checks
+        $currentTermKey = array_search($score->type, $types); // Get the numeric type key from the types array
+        $currentTypeKey = array_search($score->term, $terms); // Get the numeric term key from the terms array
+        $currentItem = $score->item;
+
+        // Update the over_score for other scores with the same term, type, and item
+        Score::where('term', $currentTypeKey) // Use the numeric term directly
+            ->where('type', $currentTermKey) // Use the numeric type directly
+            ->where('item', $currentItem)
+            ->where('id', '!=', $score->id) // Exclude the current score from being updated
+            ->update(['over_score' => $request->over_score]); // Update the over_score for all matching scores
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Score updated successfully.'
+        ]);
+    }
+
+    public function scoreDeleteApi(Request $request)
+    {
+    
+        // Find and delete all matching scores based on the criteria
+        $deletedRows = Score::where('type', $request->type)
+                            ->where('term', $request->term)
+                            ->where('item', $request->item)
+                            ->delete();
+
+        // Check if any rows were actually deleted
+        if ($deletedRows > 0) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Score deleted successfully.']);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'No matching score found.']);
+        }
+    }
+
 }
