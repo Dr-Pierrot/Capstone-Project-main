@@ -10,9 +10,7 @@ use App\Http\Controllers\ClassCardController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\Auth\ResetPasswordController;
-use App\Http\Controllers\Auth\ForgotPasswordController;
-use App\Models\Attendance;
+use App\Http\Controllers\Auth\ChangePasswordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -67,5 +65,4 @@ Route::middleware('auth:sanctum')->post('/sections', [SectionController::class, 
 Route::put('sections/{section}', [SectionController::class, 'updateSectionDetailsApi']);
 Route::middleware('auth:sanctum')->delete('/sections/{section}', [SectionController::class, 'destroySectionApi']);
 
-Route::post('password/forgot', [ForgotPasswordController::class, 'sendResetLinkEmailApi']);
-Route::post('password/reset', [ResetPasswordController::class, 'resetPasswordApi']);
+Route::middleware('auth:sanctum')->post('/changepassword', [ChangePasswordController::class, 'updatePasswordApi']);
